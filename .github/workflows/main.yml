@@ -2,8 +2,8 @@ name: CI/CD with Trading Environment
 on: [push, pull_request]
 
 jobs:
-  build-and-test:  # 👈 jobs の下に 2スペース
-    runs-on: ubuntu-latest  # 👈 build-and-test: の下に 4スペース
+  build-and-test:  
+    runs-on: ubuntu-latest  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
