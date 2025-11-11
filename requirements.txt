@@ -1,0 +1,3 @@
+requirements.txt 
+
+pandas, numpy, ta-lib (インストールに注意が必要な場合あり), backtrader, scikit-learn, requests, pytz (タイムゾーン管理), pytest.
