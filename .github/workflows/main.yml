@@ -10,7 +10,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-   # Add to your workflow's steps before installing Python dependencies:
+  
 - name: Install TA-Lib from source
   run: |
     sudo apt-get update
