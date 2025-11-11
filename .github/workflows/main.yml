@@ -1,0 +1,77 @@
+name: CI/CD with Trading Environment
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 1. TA-Lib 本体 (C言語ライブラリ) のシステムへのインストール
+    - name: Install TA-Lib System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libta-lib-dev 
+
+    # 2. LocalStackのためのDocker環境のセットアップ
+    # LocalStackのコンテナを起動し、バックグラウンドで実行
+    - name: Set up LocalStack (Docker)
+      # docker-composeまたはdocker runでLocalStackコンテナを起動
+      # ポート4566がLocalStackのデフォルトAPIポート
+      run: |
+        docker pull localstack/localstack
+        docker run -d \
+          --name localstack-container \
+          -p 4566:4566 \
+          localstack/localstack
+    
+    # LocalStackが起動するまで待機 (非常に重要)
+    - name: Wait for LocalStack to be ready
+      # LocalStackのヘルスチェックエンドポイントがOKを返すまで待機
+      run: |
+        echo "Waiting for LocalStack to be ready..."
+        for i in {1..30}; do
+          if curl -s http://localhost:4566/_localstack/health | grep '"status": "running"'; then
+            echo "LocalStack is ready!"
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "LocalStack failed to start."
+        exit 1
+
+    # 3. Python環境と依存関係のセットアップ
+    - name: Set up Python and Cache
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' 
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      # TA-LibのPythonラッパーもここでインストールされます
+      run: pip install -r requirements.txt
+      
+    # 4. テストの実行
+    # テストはLocalStackを利用するために適切な環境変数を設定する必要がある
+    - name: Run tests with pytest
+      # LocalStackを使用するための環境変数を設定
+      env:
+        # LocalStackのエンドポイントを指定
+        AWS_ENDPOINT_URL: http://localhost:4566
+        # ダミーのアクセスキー（LocalStackではこれで十分）
+        AWS_ACCESS_KEY_ID: dummy
+        AWS_SECRET_ACCESS_KEY: dummy
+        AWS_REGION: us-east-1
+      run: |
+        # ここでpytestが実行され、テスト内でLocalStack (S3など)が利用可能
+        pytest
