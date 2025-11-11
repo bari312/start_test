@@ -1,14 +1,12 @@
 name: CI/CD with Trading Environment
-
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  build-and-test:  # 👈 jobs の下に 2スペース
+    runs-on: ubuntu-latest  # 👈 build-and-test: の下に 4スペース
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Install TA-Lib from source
         run: |
           sudo apt-get update
@@ -19,6 +17,7 @@ jobs:
           ./configure --prefix=/usr
           make
           sudo make install
+# ... (以降のステップも適切にインデントを維持) ...
     # 2. LocalStackのためのDocker環境のセットアップ
     # LocalStackのコンテナを起動し、バックグラウンドで実行
     - name: Set up LocalStack (Docker)
