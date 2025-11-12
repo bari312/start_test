@@ -1,12 +1,43 @@
-name: LocalStack Docker Setup Test
+name: LocalStack Service Test
 on: [push, pull_request]
 
 jobs:
-  test_localstack_setup: # ジョブ名を変更
+  test_localstack_setup:
     runs-on: ubuntu-latest
+    
+    # 🚨 LocalStackをサービスとして定義
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+        env:
+          # LocalStackが起動するまで待機する時間を長く設定
+          DEFAULT_REGION: us-east-1
+          DOCKER_HOST: unix:///var/run/docker.sock
+          # タイムアウトを長く設定 (オプション)
+          START_TIMEOUT: 60 
+          
+        # LocalStackサービスが起動するまで待機するヘルスチェック
+        options: >-
+          --health-cmd "curl http://localhost:4566/ | grep 'LocalStack'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        
+      # 🚨 LocalStackのカスタム起動ステップを削除
+      
+      # 🚨 代わりに、サービスの起動完了を待ってから実行されるステップを追加
+      - name: Verify LocalStack Service is Up
+        run: |
+          curl http://localhost:4566/
+          echo "LocalStack is now running as a managed service."
+
+      # ... (TA-Lib インストールステップをここに戻す) ...
 
       # 1. TA-Lib 本体 (C言語ライブラリ) のインストール (変更なし)
       - name: Install TA-Lib from source
@@ -20,37 +51,7 @@ jobs:
           make
           sudo make install
       
-      # 2. LocalStackのためのDocker環境のセットアップ (新しいステップ)
-      - name: Set up LocalStack (Docker)
-        run: |
-          docker pull localstack/localstack
-          docker run -d \
-            --name localstack-container \
-            -p 4566:4566 \
-            localstack/localstack
-
-  # 🚨 LocalStackが起動するまで待機ステップの直前に追加 🚨
-      - name: Debug LocalStack Container Logs
-        # コンテナ名 (localstack-container) のログを出力
-        run: docker logs localstack-container
-        # 失敗してもデバッグのために実行を続けるように設定
-        if: always()
-
-     # 修正後の LocalStack 待機ステップ
-      - name: Wait for LocalStack to be ready
-        run: |
-          echo "Waiting for LocalStack to be ready..."
-          # 30回チェック（最長150秒）
-          # /health エンドポイントは安定しない場合があるため、単純な /
-          for i in {1..30}; do
-            if curl -s http://localhost:4566/ | grep 'LocalStack'; then
-              echo "LocalStack is ready!"
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "LocalStack failed to start within the timeout."
-          exit 1
+    
           
       - name: Just print a message
         run: echo "TA-Lib and LocalStack environment ready for use."
