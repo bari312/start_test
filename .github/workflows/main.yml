@@ -1,20 +1,18 @@
-name: TA-Lib System Install Test
+name: LocalStack Docker Setup Test
 on: [push, pull_request]
 
 jobs:
-  test_ta_lib_install: # ジョブ名を変更
+  test_localstack_setup: # ジョブ名を変更
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-        # 1. TA-Lib 本体 (C言語ライブラリ) をソースからインストール
+      # 1. TA-Lib 本体 (C言語ライブラリ) のインストール (変更なし)
       - name: Install TA-Lib from source
         run: |
           sudo apt-get update
-          # 必要なビルドツールをインストール
           sudo apt-get install -y build-essential wget
-          # TA-Libのソースコードをダウンロード、コンパイル、インストール
           wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
           tar -xzvf ta-lib-0.4.0-src.tar.gz
           cd ta-lib/
@@ -22,9 +20,29 @@ jobs:
           make
           sudo make install
       
-      - name: Verify TA-Lib installation (Optional)
-        run: ls /usr/lib | grep ta_lib # 成功すると ta_lib.a や ta_lib.so が表示されるはず
-
+      # 2. LocalStackのためのDocker環境のセットアップ (新しいステップ)
+      - name: Set up LocalStack (Docker)
+        run: |
+          docker pull localstack/localstack
+          docker run -d \
+            --name localstack-container \
+            -p 4566:4566 \
+            localstack/localstack
+      
+      # 3. LocalStackが起動するまで待機 (新しいステップ)
+      - name: Wait for LocalStack to be ready
+        run: |
+          echo "Waiting for LocalStack to be ready..."
+          # 30回チェック（最長150秒）
+          for i in {1..30}; do
+            if curl -s http://localhost:4566/_localstack/health | grep '"status": "running"'; then
+              echo "LocalStack is ready!"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "LocalStack failed to start."
+          exit 1
+          
       - name: Just print a message
-        run: echo "System dependencies installed successfully."
-     
+        run: echo "TA-Lib and LocalStack environment ready for use."
