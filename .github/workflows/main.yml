@@ -14,7 +14,7 @@ jobs:
           - 4566:4566
         # 🚨 メモリ使用を減らすため、必要なサービスのみに限定 (S3とSNSを例とする)
         env:
-          SERVICES: s3,sns 
+          SERVICES: s3,dynamodb,lambda,sqs,ec2
           # 待機時間を長くする設定（Dockerコンテナ内部の待機設定）
           START_TIMEOUT: 120 
           # その他
@@ -47,16 +47,7 @@ jobs:
           
         if: always() # 失敗しても必ず実行
 
-      # 🚨 Manual Checkの代わりに、よりシンプルな待機コマンドを試す
-      - name: Wait for LocalStack to be ready (Final Attempt)
-        run: |
-          echo "Checking LocalStack port 4566 status..."
-          # nc (netcat) を使ってポートが開くまで待機する確実な方法
-          sudo apt-get install -y netcat
-          nc -zv localhost 4566 -w 1 -c 30 # 1秒間隔で30回までポート接続を試みる
-          
-      - name: Verify LocalStack Service is Up
-        run: curl http://localhost:4566/
+     
 
       # ... (pytest 実行ステップへ続く) ...
       # 1. TA-Lib 本体 (C言語ライブラリ) のインストール (変更なし)
