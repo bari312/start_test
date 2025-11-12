@@ -7,7 +7,14 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
+  
+  # 🚨 LocalStackが起動するまで待機ステップの直前に追加 🚨
+      - name: Debug LocalStack Container Logs
+        # コンテナ名 (localstack-container) のログを出力
+        run: docker logs localstack-container
+        # 失敗してもデバッグのために実行を続けるように設定
+        if: always()
+
       # 1. TA-Lib 本体 (C言語ライブラリ) のインストール (変更なし)
       - name: Install TA-Lib from source
         run: |
@@ -29,19 +36,20 @@ jobs:
             -p 4566:4566 \
             localstack/localstack
       
-      # 3. LocalStackが起動するまで待機 (新しいステップ)
+     # 修正後の LocalStack 待機ステップ
       - name: Wait for LocalStack to be ready
         run: |
           echo "Waiting for LocalStack to be ready..."
           # 30回チェック（最長150秒）
+          # /health エンドポイントは安定しない場合があるため、単純な /
           for i in {1..30}; do
-            if curl -s http://localhost:4566/_localstack/health | grep '"status": "running"'; then
+            if curl -s http://localhost:4566/ | grep 'LocalStack'; then
               echo "LocalStack is ready!"
               exit 0
             fi
             sleep 5
           done
-          echo "LocalStack failed to start."
+          echo "LocalStack failed to start within the timeout."
           exit 1
           
       - name: Just print a message
