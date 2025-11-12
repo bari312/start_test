@@ -1,12 +1,30 @@
-name: CI/CD with Trading Environment
+name: TA-Lib System Install Test
 on: [push, pull_request]
 
 jobs:
-  build-and-test:  
-    runs-on: ubuntu-latest  
+  test_ta_lib_install: # ジョブ名を変更
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
+        
+        # 1. TA-Lib 本体 (C言語ライブラリ) をソースからインストール
+      - name: Install TA-Lib from source
+        run: |
+          sudo apt-get update
+          # 必要なビルドツールをインストール
+          sudo apt-get install -y build-essential wget
+          # TA-Libのソースコードをダウンロード、コンパイル、インストール
+          wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+          tar -xzvf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib/
+          ./configure --prefix=/usr
+          make
+          sudo make install
+      
+      - name: Verify TA-Lib installation (Optional)
+        run: ls /usr/lib | grep ta_lib # 成功すると ta_lib.a や ta_lib.so が表示されるはず
+
       - name: Just print a message
-        run: echo "YAML syntax is correct."
+        run: echo "System dependencies installed successfully."
      
