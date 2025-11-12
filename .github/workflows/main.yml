@@ -66,3 +66,35 @@ jobs:
           
       - name: Just print a message
         run: echo "TA-Lib and LocalStack environment ready for use."
+
+# ... (Install TA-Lib from source の直後、または適切な場所) ...
+      
+      # 🚨 1. Python 環境のセットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # 使用するPythonバージョン
+
+      # 🚨 2. 依存関係のキャッシュ (高速化のため)
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # 🚨 3. 依存関係のインストール
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      # 🚨 4. テストの実行
+      - name: Run tests with pytest
+        # LocalStackを使用するための環境変数を設定
+        env:
+          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ACCESS_KEY_ID: dummy
+          AWS_SECRET_ACCESS_KEY: dummy
+          AWS_REGION: us-east-1
+          # pytest 実行
+        run: pytest
