@@ -5,45 +5,60 @@ jobs:
   test_localstack_setup:
     runs-on: ubuntu-latest
     
+    # ... (jobs: build-and-test: の下の services: セクション) ...
+
     services:
       localstack:
         image: localstack/localstack:latest
         ports:
           - 4566:4566
-        # 🚨 ヘルスチェックのオプションを削除（GitHub Actionsに任せない）
+        # 🚨 メモリ使用を減らすため、必要なサービスのみに限定 (S3とSNSを例とする)
         env:
-          DEFAULT_REGION: us-east-1
+          SERVICES: s3,sns 
+          # 待機時間を長くする設定（Dockerコンテナ内部の待機設定）
+          START_TIMEOUT: 120 
+          # その他
           DOCKER_HOST: unix:///var/run/docker.sock
           
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      # ... (TA-Lib インストールステップなど) ...
+      # ... (TA-Lib インストールなどの中略) ...
       
-      # 🚨 ヘルスチェックをステップ内で手動実行する（以前の安定した方法）
-      - name: Wait for LocalStack to be ready (Manual Check)
+      # 🚨 新しいデバッグステップ: LocalStackのログをファイルに書き出す
+      - name: Force Print LocalStack Logs to File
         run: |
-          echo "Waiting for LocalStack to be ready..."
-          # 以前使った curl と grep のループを復活させる
-          for i in {1..30}; do
-            # 安定したヘルスチェック (200 OKが返るまで)
-            if curl -s http://localhost:4566/ | grep 'LocalStack'; then
-              echo "LocalStack is ready!"
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "LocalStack failed to start within the timeout (Manual Check)."
-          exit 1
+          # コンテナIDを取得（サービス名はlocalstack）
+          CONTAINER_ID=$(docker ps -aqf "name=localstack")
+          
+          # ログをファイルに保存
+          docker logs $CONTAINER_ID > localstack_logs.txt 2>&1
+          
+          echo "--- LocalStack Container Logs ---"
+          cat localstack_logs.txt
+          echo "---------------------------------"
+          
+          # 致命的なエラーメッセージが存在しないかログファイルを確認
+          if grep -i "FATAL" localstack_logs.txt; then
+            echo "::error::LocalStack FATAL error detected in logs. Check output above."
+            exit 1
+          fi
+          
+        if: always() # 失敗しても必ず実行
+
+      # 🚨 Manual Checkの代わりに、よりシンプルな待機コマンドを試す
+      - name: Wait for LocalStack to be ready (Final Attempt)
+        run: |
+          echo "Checking LocalStack port 4566 status..."
+          # nc (netcat) を使ってポートが開くまで待機する確実な方法
+          sudo apt-get install -y netcat
+          nc -zv localhost 4566 -w 1 -c 30 # 1秒間隔で30回までポート接続を試みる
           
       - name: Verify LocalStack Service is Up
-        run: |
-          # 接続確認用のシンプルなコマンド
-          curl http://localhost:4566/
+        run: curl http://localhost:4566/
 
-      # ... (TA-Lib インストールステップをここに戻す) ...
-
+      # ... (pytest 実行ステップへ続く) ...
       # 1. TA-Lib 本体 (C言語ライブラリ) のインストール (変更なし)
       - name: Install TA-Lib from source
         run: |
