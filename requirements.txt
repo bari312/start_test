@@ -1,3 +1,22 @@
-requirements.txt 
+# データ処理と数値計算
+pandas
+numpy
 
-pandas, numpy, ta-lib (インストールに注意が必要な場合あり), backtrader, scikit-learn, requests, pytz (タイムゾーン管理), pytest.
+# テクニカル分析ライブラリ (Pythonラッパー)
+TA-Lib
+
+# バックテストフレームワーク
+backtrader
+
+# 機械学習
+scikit-learn
+
+# HTTPリクエスト (API通信)
+requests
+
+# タイムゾーン管理
+pytz
+
+# テストフレームワーク
+pytest
+
