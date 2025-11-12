@@ -5,37 +5,42 @@ jobs:
   test_localstack_setup:
     runs-on: ubuntu-latest
     
-    # 🚨 LocalStackをサービスとして定義
     services:
       localstack:
         image: localstack/localstack:latest
         ports:
           - 4566:4566
+        # 🚨 ヘルスチェックのオプションを削除（GitHub Actionsに任せない）
         env:
-          # LocalStackが起動するまで待機する時間を長く設定
           DEFAULT_REGION: us-east-1
           DOCKER_HOST: unix:///var/run/docker.sock
-          # タイムアウトを長く設定 (オプション)
-          START_TIMEOUT: 60 
           
-        # LocalStackサービスが起動するまで待機するヘルスチェック
-        options: >-
-          --health-cmd "curl http://localhost:4566/ | grep 'LocalStack'"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      # 🚨 LocalStackのカスタム起動ステップを削除
+      # ... (TA-Lib インストールステップなど) ...
       
-      # 🚨 代わりに、サービスの起動完了を待ってから実行されるステップを追加
+      # 🚨 ヘルスチェックをステップ内で手動実行する（以前の安定した方法）
+      - name: Wait for LocalStack to be ready (Manual Check)
+        run: |
+          echo "Waiting for LocalStack to be ready..."
+          # 以前使った curl と grep のループを復活させる
+          for i in {1..30}; do
+            # 安定したヘルスチェック (200 OKが返るまで)
+            if curl -s http://localhost:4566/ | grep 'LocalStack'; then
+              echo "LocalStack is ready!"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "LocalStack failed to start within the timeout (Manual Check)."
+          exit 1
+          
       - name: Verify LocalStack Service is Up
         run: |
+          # 接続確認用のシンプルなコマンド
           curl http://localhost:4566/
-          echo "LocalStack is now running as a managed service."
 
       # ... (TA-Lib インストールステップをここに戻す) ...
 
