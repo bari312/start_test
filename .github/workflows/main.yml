@@ -15,7 +15,7 @@ jobs:
         ports:
           - 4566:4566 # LocalStackメインポート
         env:
-          SERVICES: s3,sqs,dynamodb  # 必要なAWSサービスを指定
+          SERVICES: s3,sqs,dynamodb,lambda,cloudwatch,logs  # 必要なAWSサービスを指定
           DEBUG: 1
         options: >-
           --health-cmd="curl -f http://localhost:4566/_localstack/health || exit 1"
@@ -45,3 +45,16 @@ jobs:
           
         run: python test.py
 
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
