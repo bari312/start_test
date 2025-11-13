@@ -10,5 +10,6 @@ s3 = boto3.client(
 )
 
 s3.create_bucket(Bucket="my-test-bucket")
-print(s3.list_buckets())
+print(s3.list_buckets()) 
+# {'Buckets': [{'Name': 'my-test-bucket', 'CreationDate': datetime.datetime(2024, 6, 1, 12, 0, tzinfo=tzutc())}], 'Owner': {'DisplayName': 'test', 'ID': 'test'}}
 
