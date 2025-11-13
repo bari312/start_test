@@ -13,7 +13,7 @@ jobs:
       localstack:
         image: localstack/localstack:latest
         ports:
-          - 4566:4566　# LocalStackメインポート
+          - 4566:4566 # LocalStackメインポート
         env:
           SERVICES: s3,sqs,dynamodb  # 必要なAWSサービスを指定
           DEBUG: 1
