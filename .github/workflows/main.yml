@@ -1,33 +1,36 @@
-name: CI/CD Pipeline
+name: LocalStack CI Test
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest # 標準OS (無料枠)
+  test:
+    runs-on: ubuntu-latest
 
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566  # LocalStackメインポート
+        env:
+          SERVICES: s3,sqs,dynamodb  # 必要なAWSサービスを指定
+          DEBUG: 1
+        options: >-
+          --health-cmd="curl -f http://localhost:4566/_localstack/health || exit 1"
+          --health-interval=5s
+          --health-retries=20
+          --health-timeout=3s
     steps:
-    - uses: actions/checkout@v4
-    
-    # Python 環境のセットアップ
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11' # 使用するPythonバージョン
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # 依存関係のキャッシュ (高速化のため)
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    # 依存関係のインストール
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-      
-    # テストの実行
-    - name: Run tests with pytest
-      run: pytest
+      - name: Install dependencies
+        run: |
+          pip install boto3 pytest localstack-client
