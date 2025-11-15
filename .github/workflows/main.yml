@@ -58,3 +58,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+ 
+      - name: Package and Deploy all Lambdas
+        run: |
+          for f in src/*.py; do
+            fname=$(basename $f .py)
+            zip -r ${fname}.zip package/* $f
+            aws --endpoint-url=http://localhost:4566 lambda create-function \
+              --function-name $fname \
+              --runtime python3.11 \
+              --handler ${fname}.lambda_handler \
+              --role arn:aws:iam::000000000000:role/lambda-role \
+              --code ZipFile=fileb://${fname}.zip || \
+            aws --endpoint-url=http://localhost:4566 lambda update-function-code \
+              --function-name $fname \
+              --zip-file fileb://${fname}.zip
+          done
