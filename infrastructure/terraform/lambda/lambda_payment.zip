@@ -1,0 +1,2 @@
+cd src/aws_handlers
+zip -r ../../../infrastructure/terraform/lambda/lambda_payload.zip lambda_handler.py

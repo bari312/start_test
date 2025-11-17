@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"  # LocalStackの統合エンドポイント
+      - "4571:4571"  # 一部古いサービス用ポート
+    environment:
+      - SERVICES=s3,sqs,lambda,dynamodb,sts
+      - DEFAULT_REGION=us-east-1
+      - DATA_DIR=/tmp/localstack/data
+      - DEBUG=1
+    volumes:
+      - "./localstack-data:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
