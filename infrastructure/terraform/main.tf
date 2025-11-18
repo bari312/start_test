@@ -101,6 +101,6 @@ resource "aws_lambda_function" "all" {
   filename      = "../../dist/${each.key}.zip"
   handler       = each.value
   runtime       = "python3.11"
-  role          = aws_iam_role.lambda_exec.arn
+  role = aws_iam_role.lambda_exec_role.arn
   source_code_hash = filebase64sha256("${path.module}/lambda/lambda_payload.zip")
 }
