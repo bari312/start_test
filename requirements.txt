@@ -19,6 +19,3 @@ pytz
 
 # テストフレームワーク
 pytest
-
-terraform
-LocalStack
