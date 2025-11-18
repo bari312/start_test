@@ -94,10 +94,7 @@ resource "aws_sqs_queue" "trade_queue" {
 # -----------------------------
 # Lambda
 # -----------------------------
-resource "aws_lambda_function" "trade_lambda" {
-  function_name = "tradeLambda"
 
-  
 resource "aws_lambda_function" "all" {
   for_each      = var.lambdas
   function_name = each.key

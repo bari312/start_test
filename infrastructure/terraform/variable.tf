@@ -5,7 +5,6 @@ variable "region" {
 
 variable "lambdas" {
   default = {
-    log_lambda  = "log_lambda.lambda_handler"
-    task_lambda = "task_lambda.lambda_handler"
+    lambda_logger  = "lambda_logger.lambda_handler"
   }
 }
