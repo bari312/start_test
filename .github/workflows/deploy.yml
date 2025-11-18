@@ -18,4 +18,31 @@ jobs:
           ./scripts/build_lambda.sh
 
 
+  terraform:
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:2
+        ports:
+          - 4566:4566
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+
  
