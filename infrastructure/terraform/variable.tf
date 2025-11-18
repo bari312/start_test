@@ -4,7 +4,5 @@ variable "region" {
 }
 
 variable "lambdas" {
-  default = {
     lambda_logger  = "lambda_logger.lambda_handler"
   }
-}
