@@ -104,7 +104,5 @@ resource "aws_lambda_function" "all" {
   role = aws_iam_role.lambda_exec_role.arn
 
   # 本番の場合
-  # source_code_hash = filebase64sha256("../../dist/${each.key}.zip"
-  
-  )
+  # source_code_hash = filebase64sha256("../../dist/${each.key}.zip")
 }
