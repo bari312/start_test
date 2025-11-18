@@ -11,5 +11,5 @@ output "sqs_queue_url" {
 }
 
 output "lambda_name" {
-  lambda_logger  = "lambda_logger.lambda_handler"
+  value  = "lambda_logger.lambda_handler"
 }

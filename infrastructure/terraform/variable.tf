@@ -4,5 +4,9 @@ variable "region" {
 }
 
 variable "lambdas" {
-    lambda_logger  = "lambda_logger.lambda_handler"
+  type = map(string)        # マップ型を指定
+  default = {
+    lambda_logger = "lambda_logger.lambda_handler"
   }
+}
+
