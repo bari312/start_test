@@ -11,5 +11,5 @@ output "sqs_queue_url" {
 }
 
 output "lambda_name" {
-  value = aws_lambda_function.trade_lambda.function_name
+  value = aws_lambda_function.lambda_logger
 }
