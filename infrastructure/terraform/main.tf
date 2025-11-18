@@ -102,5 +102,5 @@ resource "aws_lambda_function" "all" {
   handler       = each.value
   runtime       = "python3.11"
   role = aws_iam_role.lambda_exec_role.arn
-  source_code_hash = filebase64sha256("../../dist/$(each.key).zip")
+  source_code_hash = filebase64sha256("../../dist/${each.key}.zip")
 }
