@@ -97,9 +97,13 @@ resource "aws_sqs_queue" "trade_queue" {
 resource "aws_lambda_function" "trade_lambda" {
   function_name = "tradeLambda"
 
-  filename         = "${path.module}/lambda/lambda_payload.zip"
-  handler          = "lambda_handler.lambda_handler"
-  runtime          = "python3.11"
-  role             = aws_iam_role.lambda_exec_role.arn
+  
+resource "aws_lambda_function" "all" {
+  for_each      = var.lambdas
+  function_name = each.key
+  filename      = "../../dist/${each.key}.zip"
+  handler       = each.value
+  runtime       = "python3.11"
+  role          = aws_iam_role.lambda_exec.arn
   source_code_hash = filebase64sha256("${path.module}/lambda/lambda_payload.zip")
 }
