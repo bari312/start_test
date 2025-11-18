@@ -1,4 +1,4 @@
-# main_handler.py
+# lambda_logger.py
 
 import os
 from utils.logger import get_logger

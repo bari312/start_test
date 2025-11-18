@@ -1,0 +1,21 @@
+name : localstack-Deploy
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  
+jobs:
+  tests_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: deploy zip failes
+        run: |
+          chmod +x ./scripts/build_lambda.sh
+          ./scripts/build_lambda.sh
+
+
+ 
