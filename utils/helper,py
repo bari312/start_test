@@ -1,0 +1,42 @@
+# utils/helper.py
+import json
+from decimal import Decimal
+from datetime import datetime, timezone
+
+# ------------------------------
+# JSON関連
+# ------------------------------
+def to_json(data):
+    """Decimal を float に変換して JSON 文字列に変換"""
+    def convert(obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return obj
+    return json.dumps(data, default=convert)
+
+# ------------------------------
+# 時刻関連
+# ------------------------------
+def now_utc_iso():
+    """現在時刻を ISO 8601 (UTC) で返す"""
+    return datetime.now(timezone.utc).isoformat()
+
+# ------------------------------
+# DynamoDB 用
+# ------------------------------
+def clean_dynamo_item(item):
+    """DynamoDB から取れたデータの Decimal を float に変換"""
+    out = {}
+    for k, v in item.items():
+        if isinstance(v, Decimal):
+            out[k] = float(v)
+        else:
+            out[k] = v
+    return out
+
+# ------------------------------
+# 価格処理
+# ------------------------------
+def round_price(value, decimals=2):
+    """指定小数点で丸める"""
+    return round(float(value), decimals)
