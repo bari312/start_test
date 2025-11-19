@@ -43,7 +43,7 @@ jobs:
           LOCALSTACK_HOST: localhost
           AWS_ENDPOINT_URL: http://localhost:4566
           
-        run: python test.py
+        run: python tests/test.py
 
 
       - name: Cache pip packages
