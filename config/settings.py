@@ -4,10 +4,10 @@
 IS_LOCALSTACK = True  # TrueならLocalStackに接続、Falseなら本番AWSに接続
 AWS_CONFIG = {
     "region": "ap-northeast-1",
-    "dynamodb_endpoint": "http://localhost:4566" if USE_LOCALSTACK else None,
-    "s3_endpoint": "http://localhost:4566" if USE_LOCALSTACK else None,
-    "lambda_endpoint": "http://localhost:4566" if USE_LOCALSTACK else None,
-    "sqs_endpoint": "http://localhost:4566" if USE_LOCALSTACK else None,
+    "dynamodb_endpoint": "http://localhost:4566" if IS_LOCALSTACK else None,
+    "s3_endpoint": "http://localhost:4566" if IS_LOCALSTACK else None,
+    "lambda_endpoint": "http://localhost:4566" if IS_LOCALSTACK else None,
+    "sqs_endpoint": "http://localhost:4566" if IS_LOCALSTACK else None,
 }
 # 2. AWS共通設定
 AWS_REGION = "ap-northeast-1"  # 東京リージョン
@@ -25,6 +25,10 @@ S3_BUCKETS = {
 }
 
 DYNAMODB_TABLES = {
-    "orders": "orders"
+    "orders": "orders",
     "trades": "trades_table"
+}
+
+API_ENDPOINTS = {
+    "data_api": "https://webrates.truefx.com/rates/connect.html"
 }
